@@ -8,6 +8,7 @@
 
 package com.orange.espr4fastdata.controller;
 
+import com.orange.espr4fastdata.cep.EventSinkListener;
 import com.orange.espr4fastdata.exception.PersistenceException;
 import com.orange.espr4fastdata.persistence.Persistence;
 import com.orange.espr4fastdata.cep.ComplexEventProcessor;
@@ -33,30 +34,26 @@ public class AdminController {
 
     private static Logger logger = LoggerFactory.getLogger(AdminController.class);
 
-    private final ComplexEventProcessor complexEventProcessor;
-
-    private final Persistence persistence;
+    @Autowired
+    public ComplexEventProcessor complexEventProcessor;
 
     @Autowired
-    public AdminController(ComplexEventProcessor complexEventProcessor, Persistence persistence) {
-        this.complexEventProcessor = complexEventProcessor;
-        this.persistence = persistence;
+    public EventSinkListener updateListener;
 
-    }
+    @Autowired
+    public Persistence persistence;
+
 
     @RequestMapping(value = "/config", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> configuration(@RequestBody final Configuration configuration) throws PersistenceException {
+    public ResponseEntity<?> configuration(@RequestBody final Configuration configuration) throws ConfigurationException, PersistenceException {
         logger.debug("Updating configuration: {}", configuration);
 
-        try {
-            complexEventProcessor.setConfiguration(configuration);
+        // Apply configuration to CEP
+        complexEventProcessor.setConfiguration(configuration);
 
-            persistence.saveConfiguration(configuration);
-
-        } catch (ConfigurationException e) {
-            logger.error("Impossible to set configuration");
-        }
-
+        // Only then apply to listener and persist it
+        updateListener.setConfiguration(configuration);
+        persistence.saveConfiguration(configuration);
 
         return new ResponseEntity<>(HttpStatus.CREATED);
     }

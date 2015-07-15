@@ -35,17 +35,16 @@ import static org.junit.Assert.assertFalse;
 @SpringApplicationConfiguration(classes = Application.class)
 public class EventSinkListenerTest {
 
-
     @Autowired
-    private EsperEventProcessor esperEventProcessor;
+    private EventSinkListener updateListener;
 
     private Util util = new Util();
 
     @Test
     public void getUpdateContextTempSensor(){
-        esperEventProcessor.setConfiguration(util.getBasicConf());
+        updateListener.setConfiguration(util.getBasicConf());
 
-        UpdateContext updateContext = esperEventProcessor.eventSinkListener.getUpdateContext(getEventBean(), getEventTypeOut());
+        UpdateContext updateContext = updateListener.getUpdateContext(getEventBean(), getEventTypeOut());
 
         assertEquals(UpdateAction.UPDATE,updateContext.getUpdateAction());
         assertEquals(1,updateContext.getContextElements().size());

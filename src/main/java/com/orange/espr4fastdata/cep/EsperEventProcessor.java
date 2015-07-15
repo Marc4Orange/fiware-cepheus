@@ -37,7 +37,7 @@ public class EsperEventProcessor implements ComplexEventProcessor {
     private Configuration configuration;
 
     @Autowired
-    public EventSinkListener eventSinkListener;
+    public StatementAwareUpdateListener updateListener;
 
     public EsperEventProcessor() {
         epServiceProvider = EPServiceProviderManager.getDefaultProvider(new com.espertech.esper.client.Configuration());
@@ -69,8 +69,6 @@ public class EsperEventProcessor implements ComplexEventProcessor {
             this.updateStatements(configuration.getStatements());
 
             this.configuration = configuration;
-            eventSinkListener.setConfiguration(configuration);
-
         } catch (Exception e) {
             // TODO reset all esper internal state, reset previous configuration
             throw new ConfigurationException("Failed to apply new configuration", e);
@@ -88,7 +86,7 @@ public class EsperEventProcessor implements ComplexEventProcessor {
         try {
             this.epServiceProvider.getEPRuntime().sendEvent(event.getAttributes(), event.getType());
         } catch (com.espertech.esper.client.EPException e) {
-            throw new EventProcessingException(e.getMessage());
+            throw new EventProcessingException("Failed to process event", e);
         }
     }
 
@@ -179,7 +177,7 @@ public class EsperEventProcessor implements ComplexEventProcessor {
             EPStatement statement = epServiceProvider.getEPAdministrator().getStatement(hash);
             if (statement == null) {
                 statement = epServiceProvider.getEPAdministrator().createEPL(eplStatement, hash);
-                statement.addListener(eventSinkListener);
+                statement.addListener(updateListener);
             }
 
         }

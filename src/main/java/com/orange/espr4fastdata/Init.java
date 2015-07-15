@@ -9,6 +9,7 @@
 package com.orange.espr4fastdata;
 
 import com.orange.espr4fastdata.cep.ComplexEventProcessor;
+import com.orange.espr4fastdata.cep.EventSinkListener;
 import com.orange.espr4fastdata.exception.ConfigurationException;
 import com.orange.espr4fastdata.exception.PersistenceException;
 import com.orange.espr4fastdata.model.cep.Configuration;
@@ -19,7 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
- * Created by pborscia on 03/07/2015.
+ * Load configuration on startup and pass it to CEP and UpdateListerner
  */
 @Component
 public class Init {
@@ -28,22 +29,24 @@ public class Init {
 
     private final ComplexEventProcessor complexEventProcessor;
 
+    private final EventSinkListener updateListener;
+
     private final Persistence persistence;
 
+
     @Autowired
-    public Init(ComplexEventProcessor complexEventProcessor, Persistence persistence) throws PersistenceException, ConfigurationException {
+    public Init(ComplexEventProcessor complexEventProcessor, EventSinkListener updateListener, Persistence persistence) throws PersistenceException, ConfigurationException {
 
         this.complexEventProcessor = complexEventProcessor;
         this.persistence = persistence;
+        this.updateListener = updateListener;
 
-        if (this.persistence.checkConfigurationDirectory()) {
-            Configuration configuration = null;
+        // Load configuration and pass it to CEP and update listener
+        if (persistence.checkConfigurationDirectory()) {
+            Configuration configuration = persistence.loadConfiguration();
 
-            configuration = this.persistence.loadConfiguration();
-
-            this.complexEventProcessor.setConfiguration(configuration);
-
-
+            complexEventProcessor.setConfiguration(configuration);
+            updateListener.setConfiguration(configuration);
         }
     }
 
