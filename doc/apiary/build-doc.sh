@@ -8,6 +8,7 @@ PROJECT_DIR="$DOC_DIR/../.."
 
 # Build the doc apiary/v1/cep
 docker run -it --rm -v $DOC_DIR:/apib yalp/fabre -i /apib/cep/index.apib -o /apib/html
+docker run -it --rm -v $DOC_DIR:/apib yalp/fabre -i /apib/cep/index.apib -o /apib/apib.pdf --pdf
 
 # Switch to gh-pages
 cd $PROJECT_DIR
@@ -17,6 +18,7 @@ git checkout -f gh-pages
 rm -rf "$PROJECT_DIR/apiary/cep/$TAG/" >/dev/null 2>&1
 mkdir -p "$PROJECT_DIR/apiary/cep"
 mv "$DOC_DIR/html" "$PROJECT_DIR/apiary/cep/$TAG"
+mv "$DOC_DIR/apib.pdf" "$PROJECT_DIR/apiary/cep/$TAG"
 
 # Index and commit
 git add apiary
